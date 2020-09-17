@@ -3,12 +3,12 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 
-import ApolloClient from 'apollo-boost';
-import { ApolloProvider } from '@apollo/react-hooks';
+import { ApolloClient, InMemoryCache, ApolloProvider } from '@apollo/client';
 
 
 const client = new ApolloClient({
-  uri: 'https://graphqlzero.almansi.me/api'
+  uri: 'https://graphqlzero.almansi.me/api',
+  cache: new InMemoryCache()
 });
 
 ReactDOM.render(

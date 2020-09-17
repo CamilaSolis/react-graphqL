@@ -1,10 +1,9 @@
 
 import React from 'react';
 import './App.scss';
-import { useQuery, useMutation } from '@apollo/react-hooks';
-import gql from "graphql-tag";
+import { useQuery, gql, useMutation } from '@apollo/client';
 
-const READ_USER = gql`
+const READ_USERS = gql`
   query users{
     users{
       data{
@@ -20,20 +19,33 @@ const READ_USER = gql`
 `;
 
 const CREATE_USER = gql`
-  mutation CreateUser($text: String!) {
-    createUser(text: $text)
+  mutation CreateUser($input: CreateUserInput!) {
+    createUser(input: $input) {
+      id
+      name
+      email
+      company{
+        name
+      }
+    }
   }
 `;
 
 const REMOVE_USER = gql`
-  mutation RemoveUser($id: String!) {
-    removeUser(id: $id)
-  }
+    mutation (
+      $id: ID!
+    ) {
+      deleteUser(id: $id)
+      }
 `;
 
 
 function App() {
-  const { data, loading, error } = useQuery(READ_USER);
+  const { data, loading, error } = useQuery(READ_USERS);
+
+  let input;
+  const [createUser] = useMutation(CREATE_USER);
+  const [deleteUser] = useMutation(REMOVE_USER);
 
   if(loading) return <p>Cargando data...</p>;
   if(error) return <p>ERROR</p>;
@@ -42,14 +54,23 @@ function App() {
   return(
     <div>
       <h3>Crear nuevo usuario</h3>
-      {/* <form onSubmit={}>
-        <input type="text" placeholder="Ingrese nuevo usuario"></input>
+      <form onSubmit={e => {
+        e.preventDefault();
+        createUser({ variables: {name: input.value, email:input.value} });
+        input.value = '';
+        window.location.reload();
+      }}>
+        <input type="text" placeholder="Ingrese nuevo usuario" ref={node => { input = node }}></input>
         <button type="submit">Enviar</button>
-      </form> */}
+      </form>
       <ul>
         {data.users.data.map((user) =>
           <li key={user.id}>
-            <p>{user.name}</p>
+            <span>{user.name}</span>
+            <button onClick={() => {
+              deleteUser({ variables: { id: user.id }});
+              window.location.reload();
+            }}>X</button>
           </li>
         )
 
